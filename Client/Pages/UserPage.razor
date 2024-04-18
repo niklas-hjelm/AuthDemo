@@ -1,10 +1,44 @@
 ﻿@page "/userPage"
 @using Microsoft.AspNetCore.Authorization
-
+@inject IHttpClientFactory factory
 @attribute [Authorize(Roles="User")]
 
 <h3>UserPage</h3>
 
+
+@if (Things.Any())
+{
+	<ul class="list-group">
+		@foreach (var thing in Things)
+		{
+			<li class="list-group-item">
+				<h2 class="text-primary">
+					@thing.Name
+				</h2>
+			</li>
+		}
+	</ul>
+}
+
 @code {
 
+	public List<ThingModel> Things { get; set; } = new();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+
+		var client = factory.CreateClient("Auth");
+		var allThings = await client.GetFromJsonAsync<IEnumerable<ThingModel>>("/things");
+		if (allThings is not null)
+		{
+			Things.AddRange(allThings);
+		}
+	}
+
+	public class ThingModel
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
 }

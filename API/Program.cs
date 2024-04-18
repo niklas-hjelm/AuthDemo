@@ -91,9 +91,9 @@ app.MapGet("/things", async (ThingRepository repo) =>
 	return await repo.GetAllThingsAsync();
 }).RequireAuthorization();
 
-app.MapPost("/things", async (ThingRepository repo, string newThing) => 
+app.MapPost("/things", async (ThingRepository repo, Thing newThing) => 
 {
-	await repo.AddThingAsync(newThing);
+	await repo.AddThingAsync(newThing.Name);
 }).RequireAuthorization(policy => policy.RequireRole("Administrator"));
 
 app.Run();

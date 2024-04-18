@@ -1,9 +1,62 @@
 ﻿@page "/adminPage"
+@using Client.Identity
 @using Microsoft.AspNetCore.Authorization
-
+@inject IHttpClientFactory factory
 @attribute [Authorize(Roles = "Administrator")]
 <h3>AdminPage</h3>
 
-@code {
+<div class="input-group">
+	<InputText @bind-Value="NewThing.Name" />
+	<button @onclick="@AddThing">Add Thing</button>
+</div>
 
+@if (Things.Any())
+{
+	<ul class="list-group">
+		@foreach (var thing in Things)
+		{
+			<li class="list-group-item">
+				<h2 class="text-primary">
+					@thing.Name
+				</h2>	
+			</li>
+		}
+	</ul>
+}
+
+@code {
+	private ThingModel NewThing { get; set; } = new();
+	public List<ThingModel> Things { get; set; } = new ();
+	protected override async Task OnInitializedAsync()
+	{
+		await base.OnInitializedAsync();
+		await UpdateAllThings();
+	}
+
+	private async Task AddThing()
+	{
+		var client = factory.CreateClient("Auth");
+		var response = await client.PostAsJsonAsync("/things", NewThing);
+		if (response.IsSuccessStatusCode)
+		{
+			await UpdateAllThings();
+		}
+	}
+
+	private async Task UpdateAllThings()
+	{
+		var client = factory.CreateClient("Auth");
+		Things.Clear();
+		var allThings = await client.GetFromJsonAsync<IEnumerable<ThingModel>>("/things");
+		if (allThings is not null)
+		{
+			Things.AddRange(allThings);
+		}
+	} 
+
+	public class ThingModel
+	{
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
 }
