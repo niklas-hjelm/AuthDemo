@@ -1,0 +1,10 @@
+﻿@page "/userPage"
+@using Microsoft.AspNetCore.Authorization
+
+@attribute [Authorize(Roles="User")]
+
+<h3>UserPage</h3>
+
+@code {
+
+}
